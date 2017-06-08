@@ -1,6 +1,14 @@
 $.getJSON("/articles", function(data) {
   for (var i = 0; i < data.length; i++) {
-    $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
+    var link = data[i].link;
+    if (data[i].link.indexOf("/r/") != -1) {
+        link = "https://www.reddit.com" + data[i].link
+    }
+    else {
+      
+    }
+    $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + "<a href='" + 
+      link + "'>" + "link" + "</a>" + "</p>");
   }
   
 });

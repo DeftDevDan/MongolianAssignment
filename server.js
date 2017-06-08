@@ -41,29 +41,43 @@ db.once("open", function() {
 app.use("/", controller);
 
 app.get("/scrape", function(req, res) {
-  request("https://www.reddit.com/", function(error, response, html) {
-    var $ = cheerio.load(html);
-    $("p.title").each(function(i, element) {
+  Article.find({}, function(error, docs) {
+    request("https://www.reddit.com/r/buildapcsales", function(error, response, html) {
+      var $ = cheerio.load(html);
+      $("p.title").each(function(i, element) {
 
-      var result = {};
+        var result = {};
 
-      result.title = $(this).text();
-      result.link = $(this).children().attr("href");
+        result.title = $(this).text();
+        result.link = $(this).children().attr("href");
 
-      var entry = new Article(result);
+        var checkDupe = false;
 
-      entry.save(function(err, doc) {
-        if (err) {
-          console.log(err);
+        for(var i = 0; i < docs.length; i++) {
+          if(docs[i].title === result.title) {
+            checkDupe = true;
+          }
         }
-        else {
-          console.log(doc);
+
+        if(checkDupe) {
+          console.log("Nope.gif");
+        } else {
+          var entry = new Article(result);
+
+          entry.save(function(err, doc) {
+            if (err) {
+              console.log(err);
+            }
+            else {
+              console.log(doc);
+            }
+          });          
         }
       });
+      res.redirect("/");
+    });    
+  })
 
-    });
-  });
-  res.send("Scrape Complete");
 });
 
 app.get("/articles", function(req, res) {
